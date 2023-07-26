@@ -16,8 +16,9 @@ import com.sketchware.remod.xml.XmlBuilder;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Set;
 
-import mod.agus.jcoderz.handle.component.ConstVarManifest;
+import mod.agus.jcoderz.editor.manifest.EditorManifest;
 import mod.agus.jcoderz.lib.FilePathUtil;
 import mod.agus.jcoderz.lib.FileResConfig;
 import mod.agus.jcoderz.lib.FileUtil;
@@ -25,11 +26,12 @@ import mod.hey.studios.build.BuildSettings;
 import mod.hey.studios.project.ProjectSettings;
 import mod.hey.studios.util.Helper;
 import mod.hilal.saif.android_manifest.AndroidManifestInjector;
+import mod.jbk.build.BuiltInLibraries;
 
 public class Ix {
-
     public XmlBuilder a = new XmlBuilder("manifest");
     public ArrayList<ProjectFileBean> b;
+    private final BuiltInLibraryManager builtInLibraryManager;
     public BuildSettings buildSettings;
     public jq c;
     public FilePathUtil fpu = new FilePathUtil();
@@ -38,9 +40,10 @@ public class Ix {
     private boolean targetsSdkVersion31OrHigher = false;
     private String packageName;
 
-    public Ix(jq jq, ArrayList<ProjectFileBean> projectFileBeans) {
+    public Ix(jq jq, ArrayList<ProjectFileBean> projectFileBeans, BuiltInLibraryManager builtInLibraryManager) {
         c = jq;
         b = projectFileBeans;
+        this.builtInLibraryManager = builtInLibraryManager;
         buildSettings = new BuildSettings(jq.sc_id);
         frc = new FileResConfig(c.sc_id);
         a.addAttribute("xmlns", "android", "http://schemas.android.com/apk/res/android");
@@ -225,6 +228,183 @@ public class Ix {
         activityTag.a(intentFilterTag);
     }
 
+    private void writeAndroidxRoomService(XmlBuilder application) {
+        XmlBuilder invalidationService = new XmlBuilder("service");
+        invalidationService.addAttribute("android", "name", "androidx.room.MultiInstanceInvalidationService");
+        invalidationService.addAttribute("android", "directBootAware", "true");
+        invalidationService.addAttribute("android", "exported", "false");
+        application.a(invalidationService);
+    }
+
+    private void writeAndroidxStartupInitializationProvider(XmlBuilder application) {
+        var initializers = Set.of(
+                new Pair<>(builtInLibraryManager.containsLibrary(BuiltInLibraries.ANDROIDX_EMOJI2), "androidx.emoji2.text.EmojiCompatInitializer"),
+                new Pair<>(builtInLibraryManager.containsLibrary(BuiltInLibraries.ANDROIDX_LIFECYCLE_PROCESS), "androidx.lifecycle.ProcessLifecycleInitializer"),
+                new Pair<>(builtInLibraryManager.containsLibrary(BuiltInLibraries.ANDROIDX_WORK_RUNTIME), "androidx.work.WorkManagerInitializer")
+        );
+
+        if (initializers.stream().anyMatch(initializer -> initializer.first)) {
+            XmlBuilder initializationProvider = new XmlBuilder("provider");
+            initializationProvider.addAttribute("android", "name", "androidx.startup.InitializationProvider");
+            initializationProvider.addAttribute("android", "authorities", c.packageName + ".androidx-startup");
+            initializationProvider.addAttribute("android", "exported", "false");
+            for (var pair : initializers) {
+                if (pair.first) {
+                    XmlBuilder metadata = new XmlBuilder("meta-data");
+                    metadata.addAttribute("android", "name", pair.second);
+                    metadata.addAttribute("android", "value", "androidx.startup");
+                    initializationProvider.a(metadata);
+                }
+            }
+            application.a(initializationProvider);
+        }
+    }
+
+    private void writeAndroidxWorkRuntimeTags(XmlBuilder application) {
+        XmlBuilder alarmService = new XmlBuilder("service");
+        alarmService.addAttribute("android", "name", "androidx.work.impl.background.systemalarm.SystemAlarmService");
+        alarmService.addAttribute("android", "directBootAware", "false");
+        alarmService.addAttribute("android", "enabled", "@bool/enable_system_alarm_service_default");
+        alarmService.addAttribute("android", "exported", "false");
+        application.a(alarmService);
+
+        XmlBuilder jobService = new XmlBuilder("service");
+        jobService.addAttribute("android", "name", "androidx.work.impl.background.systemjob.SystemJobService");
+        jobService.addAttribute("android", "directBootAware", "false");
+        jobService.addAttribute("android", "enabled", "@bool/enable_system_job_service_default");
+        jobService.addAttribute("android", "exported", "true");
+        jobService.addAttribute("android", "permission", "android.permission.BIND_JOB_SERVICE");
+        application.a(jobService);
+
+        XmlBuilder foregroundService = new XmlBuilder("service");
+        foregroundService.addAttribute("android", "name", "androidx.work.impl.foreground.SystemForegroundService");
+        foregroundService.addAttribute("android", "directBootAware", "false");
+        foregroundService.addAttribute("android", "enabled", "@bool/enable_system_foreground_service_default");
+        foregroundService.addAttribute("android", "exported", "false");
+        application.a(foregroundService);
+
+        XmlBuilder forceStopRunnableReceiver = new XmlBuilder("receiver");
+        forceStopRunnableReceiver.addAttribute("android", "name", "androidx.work.impl.utils.ForceStopRunnable$BroadcastReceiver");
+        forceStopRunnableReceiver.addAttribute("android", "directBootAware", "false");
+        forceStopRunnableReceiver.addAttribute("android", "enabled", "true");
+        forceStopRunnableReceiver.addAttribute("android", "exported", "false");
+        application.a(forceStopRunnableReceiver);
+
+        XmlBuilder batteryChargingReceiver = new XmlBuilder("receiver");
+        batteryChargingReceiver.addAttribute("android", "name", "androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryChargingProxy");
+        batteryChargingReceiver.addAttribute("android", "directBootAware", "false");
+        batteryChargingReceiver.addAttribute("android", "enabled", "false");
+        batteryChargingReceiver.addAttribute("android", "exported", "false");
+        {
+            XmlBuilder intentFilter = new XmlBuilder("intent-filter");
+            XmlBuilder connectedAction = new XmlBuilder("action");
+            connectedAction.addAttribute("android", "name", "android.intent.action.ACTION_POWER_CONNECTED");
+            intentFilter.a(connectedAction);
+            XmlBuilder disconnectedAction = new XmlBuilder("action");
+            disconnectedAction.addAttribute("android", "name", "android.intent.action.ACTION_POWER_DISCONNECTED");
+            intentFilter.a(disconnectedAction);
+            batteryChargingReceiver.a(intentFilter);
+        }
+        application.a(batteryChargingReceiver);
+
+        XmlBuilder batteryNotLowReceiver = new XmlBuilder("receiver");
+        batteryNotLowReceiver.addAttribute("android", "name", "androidx.work.impl.background.systemalarm.ConstraintProxy$BatteryNotLowProxy");
+        batteryNotLowReceiver.addAttribute("android", "directBootAware", "false");
+        batteryNotLowReceiver.addAttribute("android", "enabled", "false");
+        batteryNotLowReceiver.addAttribute("android", "exported", "false");
+        {
+            XmlBuilder intentFilter = new XmlBuilder("intent-filter");
+            XmlBuilder okayAction = new XmlBuilder("action");
+            okayAction.addAttribute("android", "name", "android.intent.action.BATTERY_OKAY");
+            intentFilter.a(okayAction);
+            XmlBuilder lowAction = new XmlBuilder("action");
+            lowAction.addAttribute("android", "name", "android.intent.action.BATTERY_LOW");
+            intentFilter.a(lowAction);
+            batteryNotLowReceiver.a(intentFilter);
+        }
+        application.a(batteryNotLowReceiver);
+
+        XmlBuilder storageNotLowReceiver = new XmlBuilder("receiver");
+        storageNotLowReceiver.addAttribute("android", "name", "androidx.work.impl.background.systemalarm.ConstraintProxy$StorageNotLowProxy");
+        storageNotLowReceiver.addAttribute("android", "directBootAware", "false");
+        storageNotLowReceiver.addAttribute("android", "enabled", "false");
+        storageNotLowReceiver.addAttribute("android", "exported", "false");
+        {
+            XmlBuilder intentFilter = new XmlBuilder("intent-filter");
+            XmlBuilder lowAction = new XmlBuilder("action");
+            lowAction.addAttribute("android", "name", "android.intent.action.DEVICE_STORAGE_LOW");
+            intentFilter.a(lowAction);
+            XmlBuilder okAction = new XmlBuilder("action");
+            okAction.addAttribute("android", "name", "android.intent.action.DEVICE_STORAGE_OK");
+            intentFilter.a(okAction);
+            storageNotLowReceiver.a(intentFilter);
+        }
+        application.a(storageNotLowReceiver);
+
+        XmlBuilder networkStateReceiver = new XmlBuilder("receiver");
+        networkStateReceiver.addAttribute("android", "name", "androidx.work.impl.background.systemalarm.ConstraintProxy$NetworkStateProxy");
+        networkStateReceiver.addAttribute("android", "directBootAware", "false");
+        networkStateReceiver.addAttribute("android", "enabled", "false");
+        networkStateReceiver.addAttribute("android", "exported", "false");
+        {
+            XmlBuilder intentFilter = new XmlBuilder("intent-filter");
+            XmlBuilder action = new XmlBuilder("action");
+            action.addAttribute("android", "name", "android.net.conn.CONNECTIVITY_CHANGE");
+            intentFilter.a(action);
+            networkStateReceiver.a(intentFilter);
+        }
+        application.a(networkStateReceiver);
+
+        XmlBuilder rescheduleReceiver = new XmlBuilder("receiver");
+        rescheduleReceiver.addAttribute("android", "name", "androidx.work.impl.background.systemalarm.RescheduleReceiver");
+        rescheduleReceiver.addAttribute("android", "directBootAware", "false");
+        rescheduleReceiver.addAttribute("android", "enabled", "false");
+        rescheduleReceiver.addAttribute("android", "exported", "false");
+        {
+            XmlBuilder intentFilter = new XmlBuilder("intent-filter");
+            XmlBuilder bootCompletedAction = new XmlBuilder("action");
+            bootCompletedAction.addAttribute("android", "name", "android.intent.action.BOOT_COMPLETED");
+            intentFilter.a(bootCompletedAction);
+            XmlBuilder timeSetAction = new XmlBuilder("action");
+            timeSetAction.addAttribute("android", "name", "android.intent.action.TIME_SET");
+            intentFilter.a(timeSetAction);
+            XmlBuilder timezoneChangedAction = new XmlBuilder("action");
+            timezoneChangedAction.addAttribute("android", "name", "android.intent.action.TIMEZONE_CHANGED");
+            intentFilter.a(timezoneChangedAction);
+            rescheduleReceiver.a(intentFilter);
+        }
+        application.a(rescheduleReceiver);
+
+        XmlBuilder proxyUpdateReceiver = new XmlBuilder("receiver");
+        proxyUpdateReceiver.addAttribute("android", "name", "androidx.work.impl.background.systemalarm.ConstraintProxyUpdateReceiver");
+        proxyUpdateReceiver.addAttribute("android", "directBootAware", "false");
+        proxyUpdateReceiver.addAttribute("android", "enabled", "@bool/enable_system_alarm_service_default");
+        proxyUpdateReceiver.addAttribute("android", "exported", "false");
+        {
+            XmlBuilder intentFilter = new XmlBuilder("intent-filter");
+            XmlBuilder action = new XmlBuilder("action");
+            action.addAttribute("android", "name", "androidx.work.impl.background.systemalarm.UpdateProxies");
+            intentFilter.a(action);
+            proxyUpdateReceiver.a(intentFilter);
+        }
+        application.a(proxyUpdateReceiver);
+
+        XmlBuilder diagnosticsReceiver = new XmlBuilder("receiver");
+        diagnosticsReceiver.addAttribute("android", "name", "androidx.work.impl.diagnostics.DiagnosticsReceiver");
+        diagnosticsReceiver.addAttribute("android", "directBootAware", "false");
+        diagnosticsReceiver.addAttribute("android", "enabled", "true");
+        diagnosticsReceiver.addAttribute("android", "exported", "true");
+        diagnosticsReceiver.addAttribute("android", "permission", "android.permission.DUMP");
+        {
+            XmlBuilder intentFilter = new XmlBuilder("intent-filter");
+            XmlBuilder action = new XmlBuilder("action");
+            action.addAttribute("android", "name", "androidx.work.diagnostics.REQUEST_DIAGNOSTICS");
+            intentFilter.a(action);
+            diagnosticsReceiver.a(intentFilter);
+        }
+        application.a(diagnosticsReceiver);
+    }
+
     public void setYq(yq yqVar) {
         settings = new ProjectSettings(yqVar.sc_id);
         targetsSdkVersion31OrHigher = Integer.parseInt(settings.getValue(ProjectSettings.SETTING_TARGET_SDK_VERSION, "28")) >= 31;
@@ -286,8 +466,71 @@ public class Ix {
                 writePermission(a, s);
             }
         }
-        ConstVarManifest.handlePermissionComponent(a, c.x);
+        if (c.isAdMobEnabled) {
+            writePermission(a, "com.google.android.gms.permission.AD_ID");
+        }
+        if (builtInLibraryManager.containsLibrary(BuiltInLibraries.ANDROIDX_WORK_RUNTIME)) {
+            writePermission(a, "android.permission.WAKE_LOCK");
+            writePermission(a, "android.permission.ACCESS_NETWORK_STATE");
+            writePermission(a, "android.permission.RECEIVE_BOOT_COMPLETED");
+            writePermission(a, "android.permission.FOREGROUND_SERVICE");
+        }
+        if (c.x.isFCMUsed) {
+            writePermission(a, Manifest.permission.WAKE_LOCK);
+            writePermission(a, "com.google.android.c2dm.permission.RECEIVE");
+        }
+        if (c.x.isOneSignalUsed) {
+            XmlBuilder permission = new XmlBuilder("permission");
+            permission.addAttribute("android", "name", packageName + ".permission.C2D_MESSAGE");
+            permission.addAttribute("android", "protectionLevel", "signature");
+            a.a(permission);
+            writePermission(a, packageName + ".permission.C2D_MESSAGE");
+            writePermission(a, Manifest.permission.WAKE_LOCK);
+            writePermission(a, Manifest.permission.VIBRATE);
+            writePermission(a, Manifest.permission.RECEIVE_BOOT_COMPLETED);
+            writePermission(a, "com.sec.android.provider.badge.permission.READ");
+            writePermission(a, "com.sec.android.provider.badge.permission.WRITE");
+            writePermission(a, "com.htc.launcher.permission.READ_SETTINGS");
+            writePermission(a, "com.htc.launcher.permission.UPDATE_SHORTCUT");
+            writePermission(a, "com.sonyericsson.home.permission.BROADCAST_BADGE");
+            writePermission(a, "com.sonymobile.home.permission.PROVIDER_INSERT_BADGE");
+            writePermission(a, "com.anddoes.launcher.permission.UPDATE_COUNT");
+            writePermission(a, "com.majeur.launcher.permission.UPDATE_BADGE");
+            writePermission(a, "com.huawei.android.launcher.permission.CHANGE_BADGE");
+            writePermission(a, "com.huawei.android.launcher.permission.READ_SETTINGS");
+            writePermission(a, "com.huawei.android.launcher.permission.WRITE_SETTINGS");
+            writePermission(a, "android.permission.READ_APP_BADGE");
+            writePermission(a, "com.oppo.launcher.permission.READ_SETTINGS");
+            writePermission(a, "com.oppo.launcher.permission.WRITE_SETTINGS");
+            writePermission(a, "me.everything.badger.permission.BADGE_COUNT_READ");
+            writePermission(a, "me.everything.badger.permission.BADGE_COUNT_WRITE");
+        }
         AndroidManifestInjector.getP(a, c.sc_id);
+
+        if (c.isAdMobEnabled) {
+            XmlBuilder queries = new XmlBuilder("queries");
+            XmlBuilder forBrowserContent = new XmlBuilder("intent");
+            {
+                XmlBuilder action = new XmlBuilder("action");
+                action.addAttribute("android", "name", "android.intent.action.VIEW");
+                forBrowserContent.a(action);
+                XmlBuilder category = new XmlBuilder("category");
+                category.addAttribute("android", "name", "android.intent.category.BROWSABLE");
+                forBrowserContent.a(category);
+                XmlBuilder data = new XmlBuilder("data");
+                data.addAttribute("android", "scheme", "https");
+                forBrowserContent.a(data);
+            }
+            queries.a(forBrowserContent);
+            XmlBuilder forCustomTabsService = new XmlBuilder("intent");
+            {
+                XmlBuilder action = new XmlBuilder("action");
+                action.addAttribute("android", "name", "android.support.customtabs.action.CustomTabsService");
+                forCustomTabsService.a(action);
+            }
+            queries.a(forCustomTabsService);
+            a.a(queries);
+        }
 
         XmlBuilder applicationTag = new XmlBuilder("application");
         applicationTag.addAttribute("android", "allowBackup", "true");
@@ -380,8 +623,35 @@ public class Ix {
             XmlBuilder activityTag = new XmlBuilder("activity");
             activityTag.addAttribute("android", "name", "com.google.android.gms.ads.AdActivity");
             activityTag.addAttribute("android", "configChanges", "keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize");
+            activityTag.addAttribute("android", "exported", "false");
             activityTag.addAttribute("android", "theme", "@android:style/Theme.Translucent");
             applicationTag.a(activityTag);
+
+            XmlBuilder initProvider = new XmlBuilder("provider");
+            initProvider.addAttribute("android", "name", "com.google.android.gms.ads.MobileAdsInitProvider");
+            initProvider.addAttribute("android", "authorities", c.packageName + ".mobileadsinitprovider");
+            initProvider.addAttribute("android", "exported", "false");
+            initProvider.addAttribute("android", "initOrder", "100");
+            applicationTag.a(initProvider);
+
+            XmlBuilder adService = new XmlBuilder("service");
+            adService.addAttribute("android", "name", "com.google.android.gms.ads.AdService");
+            adService.addAttribute("android", "enabled", "true");
+            adService.addAttribute("android", "exported", "false");
+            applicationTag.a(adService);
+
+            XmlBuilder testingActivity = new XmlBuilder("activity");
+            testingActivity.addAttribute("android", "name", "com.google.android.gms.ads.OutOfContextTestingActivity");
+            testingActivity.addAttribute("android", "configChanges", "keyboard|keyboardHidden|orientation|screenLayout|uiMode|screenSize|smallestScreenSize");
+            testingActivity.addAttribute("android", "exported", "false");
+            applicationTag.a(testingActivity);
+        }
+        if (builtInLibraryManager.containsLibrary(BuiltInLibraries.ANDROIDX_ROOM_RUNTIME)) {
+            writeAndroidxRoomService(applicationTag);
+        }
+        writeAndroidxStartupInitializationProvider(applicationTag);
+        if (builtInLibraryManager.containsLibrary(BuiltInLibraries.ANDROIDX_WORK_RUNTIME)) {
+            writeAndroidxWorkRuntimeTags(applicationTag);
         }
         if (c.isFirebaseEnabled || c.isAdMobEnabled || c.isMapUsed) {
             writeGMSVersion(applicationTag);
@@ -398,7 +668,18 @@ public class Ix {
         if (c.isMapUsed) {
             writeGoogleMapMetaData(applicationTag);
         }
-        ConstVarManifest.handleBgTaskComponent(applicationTag, c.x);
+        if (c.x.isFCMUsed) {
+            EditorManifest.writeDefFCM(applicationTag);
+        }
+        if (c.x.isOneSignalUsed) {
+            EditorManifest.manifestOneSignal(applicationTag, packageName, c.x.param);
+        }
+        if (c.x.isFBAdsUsed) {
+            EditorManifest.manifestFBAds(applicationTag, packageName);
+        }
+        if (c.x.isFBGoogleUsed) {
+            EditorManifest.manifestFBGoogleLogin(applicationTag);
+        }
         if (FileUtil.isExistFile(fpu.getManifestJava(c.sc_id))) {
             ArrayList<HashMap<String, Object>> activityAttrs = getActivityAttrs();
             for (String activityName : frc.getJavaManifestList()) {

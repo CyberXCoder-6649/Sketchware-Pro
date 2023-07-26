@@ -105,6 +105,7 @@ import mod.hey.studios.util.Helper;
 import mod.hilal.saif.activities.android_manifest.AndroidManifestInjection;
 import mod.hilal.saif.activities.tools.ConfigActivity;
 import mod.jbk.build.BuildProgressReceiver;
+import mod.jbk.build.BuiltInLibraries;
 import mod.jbk.code.CodeEditorColorSchemes;
 import mod.jbk.code.CodeEditorLanguages;
 import mod.jbk.diagnostic.CompileErrorSaver;
@@ -240,10 +241,6 @@ public class DesignActivity extends BaseAppCompatActivity implements OnClickList
         }
     }
 
-    private void generateProjectDebugFiles() {
-        q.b(jC.b(sc_id), jC.a(sc_id), jC.c(sc_id));
-    }
-
     /**
      * Opens the debug APK to install.
      */
@@ -296,19 +293,6 @@ public class DesignActivity extends BaseAppCompatActivity implements OnClickList
         }
 
         startActivity(intent);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        switch (requestCode) {
-            case 462:
-                if (resultCode == RESULT_OK && data.getBooleanExtra("req_update_design_activity", false)) {
-                    viewTabAdapter.j();
-                }
-                break;
-        }
     }
 
     @Override
@@ -974,11 +958,17 @@ public class DesignActivity extends BaseAppCompatActivity implements OnClickList
                     kC.c(q.resDirectoryPath + File.separator + "raw");
                     kC = jC.d(sc_id);
                     kC.a(q.assetsPath + File.separator + "fonts");
-                    activity.generateProjectDebugFiles();
-                    q.f();
-                    q.e();
 
                     ProjectBuilder builder = new ProjectBuilder(this, a, q);
+
+                    var fileManager = jC.b(sc_id);
+                    var dataManager = jC.a(sc_id);
+                    var libraryManager = jC.c(sc_id);
+                    q.a(libraryManager, fileManager, dataManager, false);
+                    builder.buildBuiltInLibraryInformation();
+                    q.b(fileManager, dataManager, libraryManager, builder.getBuiltInLibraryManager());
+                    q.f();
+                    q.e();
 
                     builder.maybeExtractAapt2();
                     if (canceled) {
@@ -987,7 +977,7 @@ public class DesignActivity extends BaseAppCompatActivity implements OnClickList
                     }
 
                     publishProgress("Extracting built-in libraries...");
-                    builder.getBuiltInLibrariesReady();
+                    BuiltInLibraries.extractCompileAssets(this);
                     if (canceled) {
                         cancel(true);
                         return;
