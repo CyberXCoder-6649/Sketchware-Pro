@@ -26,6 +26,7 @@ import java.util.zip.ZipFile
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
+import org.apache.maven.artifact.versioning.ComparableVersion
 
 class DependencyResolver(
     private val groupId: String,
@@ -74,7 +75,7 @@ class DependencyResolver(
         Environment.getExternalStorageDirectory().absolutePath,
         ".sketchware", "libs", "repositories.json"
     )
-    private val resolvedArtifacts: HashSet<String> = HashSet()
+   private val resolvedArtifacts: HashSet<Pair<String, ComparableVersion>> = HashSet()
     init {
         if (Files.notExists(repositoriesJson)) {
             Files.createDirectories(repositoriesJson.parent)
@@ -191,12 +192,11 @@ class DependencyResolver(
         dependencies: MutableList<Artifact>,
         callback: DependencyResolverCallback
     ) {
-        val artifactStr = "${artifact.groupId}-${artifact.artifactId}-v${artifact.version}"
-        if (resolvedArtifacts.contains(artifact.toStr())) {
-            callback.log("Dependency $artifactStr already resolved, skipping...")
-            return
+        val key = Pair(artifact.groupId, artifact.artifactId)
+        if (resolvedArtifacts.any { it.first == key.first && it.second == key.second && it.version >= ComparableVersion(artifact.version) }) {
+            return // Skip resolving if the artifact with the same or higher version has already been resolved
         }
-        resolvedArtifacts.add(artifact.toStr()) // Add the artifact to the resolved set
+        resolvedArtifacts.add(Pair(artifact.groupId, artifact.artifactId, ComparableVersion(artifact.version))) // Add the artifact to the resolved set
         dependencies.add(artifact)
         callback.log("Resolving sub-dependencies for ${artifact.toStr()}...")
         val pom = artifact.getPOM()
