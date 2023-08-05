@@ -26,7 +26,6 @@ import java.util.zip.ZipFile
 import javax.xml.parsers.DocumentBuilderFactory
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
-import org.apache.maven.artifact.versioning.ComparableVersion
 
 class DependencyResolver(
     private val groupId: String,
@@ -75,7 +74,7 @@ class DependencyResolver(
         Environment.getExternalStorageDirectory().absolutePath,
         ".sketchware", "libs", "repositories.json"
     )
-   private val resolvedArtifacts: HashSet<Pair<String, ComparableVersion>> = HashSet()
+   private val resolvedDependencies: MutableSet<String> = mutableSetOf()
     init {
         if (Files.notExists(repositoriesJson)) {
             Files.createDirectories(repositoriesJson.parent)
@@ -122,6 +121,21 @@ class DependencyResolver(
         resolvedArtifacts.clear() // Clear the cache before resolving new dependencies
         // this is pretty much the same as `Artifact.downloadArtifact()`, but with some modifications for checks and callbacks
         val dependencies = mutableListOf<Artifact>()
+        val path =
+                Paths.get(
+                    downloadPath,
+                    "${artifact.artifactId}-v${artifact.version}",
+                    "classes.${artifact.extension}"
+                )
+        if (Files.exists(path)) {
+            callback.log("Dependency ${artifact.toStr()} already exists, skipping...")
+            return
+        }
+        // Check if the dependency has already been resolved
+        if (resolvedDependencies.contains(artifactKey)) {
+            callback.log("Dependency ${artifact.toStr()} already resolved, skipping...")
+            return
+        }
         callback.startResolving("$groupId:$artifactId:$version")
         val dependency = getArtifact(groupId, artifactId, version)
         if (dependency == null) {
@@ -152,15 +166,6 @@ class DependencyResolver(
                 callback.invalidPackaging(artifact.toStr())
                 return@forEach
             }
-            val path =
-                Paths.get(
-                    downloadPath,
-                    "${artifact.artifactId}-v${artifact.version}",
-                    "classes.${artifact.extension}"
-                )
-            if (Files.exists(path)) {
-                callback.log("Dependency ${artifact.toStr()} already exists, skipping...")
-            }
             Files.createDirectories(path.parent)
             callback.downloading(artifact.toStr())
             try {
@@ -182,6 +187,8 @@ class DependencyResolver(
             callback.dexing(artifact.toStr())
             compileJar(path.parent.resolve("classes.jar"))
             callback.onDependencyResolved(artifact.toStr())
+            // Add the resolved dependency to the cache
+            resolvedDependencies.add(artifactKey)
         }
         callback.onTaskCompleted(latestDeps.map { "${it.artifactId}-v${it.version}" })
     }
@@ -192,11 +199,6 @@ class DependencyResolver(
         dependencies: MutableList<Artifact>,
         callback: DependencyResolverCallback
     ) {
-        val key = Pair(artifact.groupId, artifact.artifactId)
-        if (resolvedArtifacts.any { it.first == key.first && it.second == key.second && it.version >= ComparableVersion(artifact.version) }) {
-            return // Skip resolving if the artifact with the same or higher version has already been resolved
-        }
-        resolvedArtifacts.add(Pair(artifact.groupId, artifact.artifactId, ComparableVersion(artifact.version))) // Add the artifact to the resolved set
         dependencies.add(artifact)
         callback.log("Resolving sub-dependencies for ${artifact.toStr()}...")
         val pom = artifact.getPOM()
