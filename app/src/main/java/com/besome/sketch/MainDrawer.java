@@ -124,7 +124,7 @@ public class MainDrawer extends LinearLayout implements View.OnClickListener {
     private void initializeDrawerItems() {
         DrawerItem menuAboutModders = DrawerItem.MENU_ABOUT_MODDERS;
         menuAboutModders.icon = R.drawable.side_menu_info_icon_over_white;
-        menuAboutModders.title = "About Modders";
+        menuAboutModders.title = "About The Team";
 
         DrawerItem menuChangelog = DrawerItem.MENU_CHANGELOG;
         menuChangelog.icon = R.drawable.icon_file_white_96;
@@ -237,8 +237,7 @@ public class MainDrawer extends LinearLayout implements View.OnClickListener {
         @Override
         public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             if (!(holder instanceof EmptyViewHolder)) {
-                if (holder instanceof MenuItemHolder) {
-                    MenuItemHolder menuItemHolder = (MenuItemHolder) holder;
+                if (holder instanceof MenuItemHolder menuItemHolder) {
                     menuItemHolder.name.setImageResource(DrawerItem.values()[position > 0 ? position - 1 : position].getIcon());
                     DrawerItem[] values = DrawerItem.values();
                     if (position > 0) position--;

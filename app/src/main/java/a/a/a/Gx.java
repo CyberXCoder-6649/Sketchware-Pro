@@ -126,7 +126,7 @@ public class Gx {
                 break;
 
             case "CalendarView":
-                classInfos = "View.FrameLayout.CalendarView";
+                classInfos = "View.ViewGroup.FrameLayout.CalendarView";
                 break;
 
             case "AdView":
@@ -151,6 +151,198 @@ public class Gx {
 
             case "HorizontalScrollView":
                 classInfos = "View.ViewGroup.FrameLayout.HorizontalScrollView";
+                break;
+
+            case "ProgressBar":
+                classInfos = "View.SeekBar.ProgressBar";
+                break;
+
+            case "RadioButton":
+                classInfos = "View.Clickable.TextView.Button.CompoundButton.RadioButton";
+                break;
+
+            case "RatingBar":
+                classInfos = "View.Clickable.RatingBar";
+                break;
+
+            case "SearchView":
+                classInfos = "View.ViewGroup.LinearLayoutCompat.SearchView";
+                break;
+
+            case "VideoView":
+                classInfos = "View.VideoView";
+                break;
+
+            case "AutoCompleteTextView":
+                classInfos = "View.Clickable.TextView.EditText.AutoCompleteTextView";
+                break;
+
+            case "MultiAutoCompleteTextView":
+                classInfos = "View.Clickable.TextView.EditText.MultiAutoCompleteTextView";
+                break;
+
+            case "GridView":
+                classInfos = "View.ViewGroup.AdapterView.AbsListView.GridView";
+                break;
+
+            case "AnalogClock":
+                classInfos = "View.Clickable.AnalogClock";
+                break;
+
+            case "DigitalClock":
+                classInfos = "View.Clickable.DigitalClock";
+                break;
+
+            case "DatePicker":
+                classInfos = "View.Clickable.DatePicker";
+                break;
+
+            case "TimePicker":
+                classInfos = "View.Clickable.TimePicker";
+                break;
+
+            case "TabLayout":
+                classInfos = "View.ViewGroup.FrameLayout.HorizontalScrollView.TabLayout";
+                break;
+
+            case "ViewPager":
+                classInfos = "View.ViewGroup.ViewPager";
+                break;
+
+            case "BottomNavigationView":
+                classInfos = "View.ViewGroup.BottomNavigationView";
+                break;
+
+            case "BadgeView":
+                classInfos = "View.Clickable.FrameLayout.BadgeView";
+                break;
+
+            case "PatternLockView":
+                classInfos = "View.PatternLockView";
+                break;
+
+            case "WaveSideBar":
+                classInfos = "View.FrameLayout.RelativeLayout.WaveSideBar";
+                break;
+
+            case "SignInButton":
+                classInfos = "View.Clickable.Button.SignInButton";
+                break;
+
+            case "MaterialButton":
+                classInfos = "View.Clickable.TextView.Button";
+                break;
+
+            case "CircleImageView":
+                classInfos = "View.Clickable.ImageView.CircleImageView";
+                break;
+
+            case "CollapsingToolbarLayout":
+                classInfos = "View.ViewGroup.FrameLayout.CollapsingToolbarLayout";
+                break;
+
+            case "SwipeRefreshLayout":
+                classInfos = "View.ViewGroup.SwipeRefreshLayout";
+                break;
+
+            case "TextInputLayout":
+                classInfos = "View.ViewGroup.TextInputLayout";
+                break;
+
+            case "RadioGroup":
+                classInfos = "View.ViewGroup.LinearLayout.RadioGroup";
+                break;
+
+            case "CardView":
+                classInfos = "View.Clickable.ViewGroup.FrameLayout.CardView";
+                break;
+
+            case "LottieAnimationView":
+                classInfos = "View.Clickable.LottieAnimation";
+                break;
+
+            case "YoutubePlayerView":
+                classInfos = "View.Clickable.YoutubePlayer";
+                break;
+
+            case "OTPView":
+                classInfos = "View.Clickable.OTPView";
+                break;
+
+            case "RecyclerView":
+                classInfos = "View.ViewGroup.RecyclerView";
+                break;
+
+            case "TextToSpeech":
+                classInfos = "Component.TextToSpeech";
+                break;
+
+            case "SpeechToText":
+                classInfos = "Component.SpeechToText";
+                break;
+
+            case "BluetoothConnect":
+                classInfos = "Component.BluetoothConnect";
+                break;
+
+            case "LocationManager":
+                classInfos = "Component.LocationManager";
+                break;
+
+            case "FBAdsInterstitial":
+                classInfos = "Component.FBAdsInterstitial";
+                break;
+
+            case "Videos":
+                classInfos = "Component.Videos";
+                break;
+
+            case "FirebaseAdmin":
+                classInfos = "Component.OneSignal";
+                break;
+
+            case "FirebaseCloudMessage":
+                classInfos = "Component.FirebaseCloudMessage";
+                break;
+
+            case "TimePickerDialog":
+                classInfos = "Component.TimePickerDialog";
+                break;
+
+            case "FBAdsBanner":
+                classInfos = "Component.FBAdsBanner";
+                break;
+
+            case "Notification":
+                classInfos = "Component.Notification";
+                break;
+
+            case "ProgressDialog":
+                classInfos = "Component.ProgressDialog";
+                break;
+
+            case "FirebaseGoogleLogin":
+                classInfos = "Component.FirebaseGoogleLogin";
+                break;
+
+            case "FirebaseDynamicLink":
+                classInfos = "Component.FirebaseDynamicLink";
+                break;
+
+            case "PopupMenu":
+                classInfos = "Component.PopupMenu";
+                break;
+
+            case "DatePickerDialog":
+                classInfos = "Component.DatePickerDialog";
+                break;
+
+            case "FirebasePhoneAuth":
+                classInfos = "Component.FirebasePhoneAuth";
+                break;
+
+            case "MediaController":
+                classInfos = "Component.MediaController";
                 break;
 
             case "Intent":
@@ -215,198 +407,6 @@ public class Gx {
 
             case "RequestNetwork":
                 classInfos = "Component.RequestNetwork";
-                break;
-
-            case "ProgressBar":
-                classInfos = "View.SeekBar.ProgressBar";
-                break;
-
-            case "TextToSpeech":
-                classInfos = "Component.TextToSpeech";
-                break;
-
-            case "SpeechToText":
-                classInfos = "Component.SpeechToText";
-                break;
-
-            case "BluetoothConnect":
-                classInfos = "Component.BluetoothConnect";
-                break;
-
-            case "LocationManager":
-                classInfos = "Component.LocationManager";
-                break;
-
-            case "RadioButton":
-                classInfos = "View.Clickable.TextView.Button.CompoundButton.RadioButton";
-                break;
-
-            case "RatingBar":
-                classInfos = "View.Clickable.RatingBar";
-                break;
-
-            case "SearchView":
-                classInfos = "View.ViewGroup.LinearLayoutCompat.SearchView";
-                break;
-
-            case "VideoView":
-                classInfos = "View.VideoView";
-                break;
-
-            case "AutoCompleteTextView":
-                classInfos = "View.Clickable.TextView.EditText.AutoCompleteTextView";
-                break;
-
-            case "MultiAutoCompleteTextView":
-                classInfos = "View.Clickable.TextView.EditText.MultiAutoCompleteTextView";
-                break;
-
-            case "GridView":
-                classInfos = "View.ViewGroup.AdapterView.AbsListView.GridView";
-                break;
-
-            case "AnalogClock":
-                classInfos = "View.Clickable.AnalogClock";
-                break;
-
-            case "DigitalClock":
-                classInfos = "View.Clickable.DigitalClock";
-                break;
-
-            case "DatePicker":
-                classInfos = "View.Clickable.DatePicker";
-                break;
-
-            case "TimePicker":
-                classInfos = "View.Clickable.TimePicker";
-                break;
-
-            case "TabLayout":
-                classInfos = "View.TabLayout";
-                break;
-
-            case "ViewPager":
-                classInfos = "View.ViewGroup.AdapterView.ViewPager";
-                break;
-
-            case "BottomNavigationView":
-                classInfos = "View.ViewGroup.BottomNavigationView";
-                break;
-
-            case "BadgeView":
-                classInfos = "View.Clickable.FrameLayout.BadgeView";
-                break;
-
-            case "PatternLockView":
-                classInfos = "View.PatternLockView";
-                break;
-
-            case "WaveSideBar":
-                classInfos = "View.FrameLayout.RelativeLayout.WaveSideBar";
-                break;
-
-            case "SignInButton":
-                classInfos = "View.Clickable.Button.SignInButton";
-                break;
-
-            case "MaterialButton":
-                classInfos = "View.Clickable.TextView.Button";
-                break;
-
-            case "CircleImageView":
-                classInfos = "View.Clickable.ImageView.CircleImageView";
-                break;
-
-            case "CollapsingToolbarLayout":
-                classInfos = "View.ViewGroup.LinearLayout.CollapsingToolbarLayout";
-                break;
-
-            case "SwipeRefreshLayout":
-                classInfos = "View.ViewGroup.LinearLayout.SwipeRefreshLayout";
-                break;
-
-            case "TextInputLayout":
-                classInfos = "View.ViewGroup.LinearLayout.TextInputLayout";
-                break;
-
-            case "RadioGroup":
-                classInfos = "View.ViewGroup.LinearLayout.RadioGroup";
-                break;
-
-            case "CardView":
-                classInfos = "View.Clickable.ViewGroup.LinearLayout.CardView";
-                break;
-
-            case "LottieAnimationView":
-                classInfos = "View.Clickable.LottieAnimation";
-                break;
-
-            case "YoutubePlayerView":
-                classInfos = "View.Clickable.YoutubePlayer";
-                break;
-
-            case "OTPView":
-                classInfos = "View.Clickable.OTPView";
-                break;
-
-            case "RecyclerView":
-                classInfos = "View.RecyclerView";
-                break;
-
-            case "FBAdsInterstitial":
-                classInfos = "Component.FBAdsInterstitial";
-                break;
-
-            case "Videos":
-                classInfos = "Component.Videos";
-                break;
-
-            case "FirebaseAdmin":
-                classInfos = "Component.OneSignal";
-                break;
-
-            case "FirebaseCloudMessage":
-                classInfos = "Component.FirebaseCloudMessage";
-                break;
-
-            case "TimePickerDialog":
-                classInfos = "Component.TimePickerDialog";
-                break;
-
-            case "FBAdsBanner":
-                classInfos = "Component.FBAdsBanner";
-                break;
-
-            case "Notification":
-                classInfos = "Component.Notification";
-                break;
-
-            case "ProgressDialog":
-                classInfos = "Component.ProgressDialog";
-                break;
-
-            case "FirebaseGoogleLogin":
-                classInfos = "Component.FirebaseGoogleLogin";
-                break;
-
-            case "FirebaseDynamicLink":
-                classInfos = "Component.FirebaseDynamicLink";
-                break;
-
-            case "PopupMenu":
-                classInfos = "Component.PopupMenu";
-                break;
-
-            case "DatePickerDialog":
-                classInfos = "Component.DatePickerDialog";
-                break;
-
-            case "FirebasePhoneAuth":
-                classInfos = "Component.FirebasePhoneAuth";
-                break;
-
-            case "MediaController":
-                classInfos = "Component.MediaController";
                 break;
 
             default:
