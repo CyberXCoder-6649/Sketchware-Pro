@@ -118,11 +118,11 @@ class DependencyResolver(
     }
 
     fun resolveDependency(callback: DependencyResolverCallback) {
-        resolvedArtifacts.clear() // Clear the cache before resolving new dependencies
+        resolvedDependencies.clear() // Clear the cache before resolving new dependencies
         // this is pretty much the same as `Artifact.downloadArtifact()`, but with some modifications for checks and callbacks
         val dependencies = mutableListOf<Artifact>()
         // Check if the dependency has already been resolved
-        if (resolvedDependencies.contains(artifactKey)) {
+        if (resolvedDependencies.contains(artifact.toStr())) {
             callback.log("Dependency ${artifact.toStr()} already resolved, skipping...")
             return
         }
