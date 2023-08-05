@@ -74,7 +74,7 @@ class DependencyResolver(
         Environment.getExternalStorageDirectory().absolutePath,
         ".sketchware", "libs", "repositories.json"
     )
-
+    private val resolvedArtifacts: HashSet<String> = HashSet()
     init {
         if (Files.notExists(repositoriesJson)) {
             Files.createDirectories(repositoriesJson.parent)
@@ -118,6 +118,7 @@ class DependencyResolver(
     }
 
     fun resolveDependency(callback: DependencyResolverCallback) {
+        resolvedArtifacts.clear() // Clear the cache before resolving new dependencies
         // this is pretty much the same as `Artifact.downloadArtifact()`, but with some modifications for checks and callbacks
         val dependencies = mutableListOf<Artifact>()
         callback.startResolving("$groupId:$artifactId:$version")
@@ -190,6 +191,12 @@ class DependencyResolver(
         dependencies: MutableList<Artifact>,
         callback: DependencyResolverCallback
     ) {
+        val artifactStr = "${artifact.groupId}-${artifact.artifactId}-v${artifact.version}"
+        if (resolvedArtifacts.contains(artifact.toStr())) {
+            callback.log("Dependency $artifactStr already resolved, skipping...")
+            return
+        }
+        resolvedArtifacts.add(artifact.toStr()) // Add the artifact to the resolved set
         dependencies.add(artifact)
         callback.log("Resolving sub-dependencies for ${artifact.toStr()}...")
         val pom = artifact.getPOM()
