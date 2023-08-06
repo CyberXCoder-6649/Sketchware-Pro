@@ -227,7 +227,7 @@ class DependencyResolver(
             )
         if (Files.exists(local_repository)) {
             callback.log("Dependency ${artifactKey} already downloaded, skipping...")
-            dependencies.add(artifactKey)
+            dependencies.add(dep)
             return@forEach
         }
         resolve(dep, dependencies, callback)
