@@ -74,7 +74,6 @@ class DependencyResolver(
         Environment.getExternalStorageDirectory().absolutePath,
         ".sketchware", "libs", "repositories.json"
     )
-   private val resolvedDependencies: MutableSet<String> = mutableSetOf()
     init {
         if (Files.notExists(repositoriesJson)) {
             Files.createDirectories(repositoriesJson.parent)
@@ -118,26 +117,8 @@ class DependencyResolver(
     }
 
     fun resolveDependency(callback: DependencyResolverCallback) {
-        resolvedDependencies.clear() // Clear the cache before resolving new dependencies
         // this is pretty much the same as `Artifact.downloadArtifact()`, but with some modifications for checks and callbacks
         val dependencies = mutableListOf<Artifact>()
-        val artifactKey = "$groupId:$artifactId:$version"
-        // Check if the dependency has already been resolved
-        if (resolvedDependencies.contains(artifactKey)) {
-            callback.log("Dependency ${artifactKey} already resolved, skipping...")
-            return
-        }
-        val path =
-                Paths.get(
-                    downloadPath,
-                    "${artifactId}-v${version}"
-                    //"classes.${artifact.extension}"
-                )
-        if (Files.exists(path)) {
-            callback.log("Dependency ${artifactKey} already downloaded, skipping...")
-            resolvedDependencies.add(artifactKey)
-            return
-        }
         callback.startResolving("$groupId:$artifactId:$version")
         val dependency = getArtifact(groupId, artifactId, version)
         if (dependency == null) {
@@ -201,6 +182,7 @@ class DependencyResolver(
         dependencies: MutableList<Artifact>,
         callback: DependencyResolverCallback
     ) {
+        /
         dependencies.add(artifact)
         callback.log("Resolving sub-dependencies for ${artifact.toStr()}...")
         val pom = artifact.getPOM()
@@ -227,6 +209,23 @@ class DependencyResolver(
                 callback.onDependencyNotFound(artifact.toStr())
                 callback.log("Cannot resolve ${artifact.toStr()}")
                 return
+            }
+            val artifactKey = "${dep.groupId}:${dep.artifactId}:${dep.version}"
+            // Check if the dependency has already been resolved
+            if (dependencies.contains(artifactKey)) {
+                callback.log("Dependency ${artifactKey} already resolved, skipping...")
+                continue
+            }
+            val local_repository =
+                Paths.get(
+                    downloadPath,
+                    "${artifactId}-v${version}"
+                    //"classes.${artifact.extension}"
+                )
+           if (Files.exists(local_repository)) {
+                callback.log("Dependency ${artifactKey} already downloaded, skipping...")
+                dependencies.add(artifactKey)
+                continue
             }
             resolve(dep, dependencies, callback)
         }
