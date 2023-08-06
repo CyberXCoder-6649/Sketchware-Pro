@@ -121,20 +121,21 @@ class DependencyResolver(
         resolvedDependencies.clear() // Clear the cache before resolving new dependencies
         // this is pretty much the same as `Artifact.downloadArtifact()`, but with some modifications for checks and callbacks
         val dependencies = mutableListOf<Artifact>()
+        val artifactKey = "$groupId:$artifactId:$version"
         // Check if the dependency has already been resolved
-        if (resolvedDependencies.contains(artifact.toStr())) {
-            callback.log("Dependency ${artifact.toStr()} already resolved, skipping...")
+        if (resolvedDependencies.contains(artifactKey)) {
+            callback.log("Dependency ${artifactKey} already resolved, skipping...")
             return
         }
         val path =
                 Paths.get(
                     downloadPath,
-                    "${artifact.artifactId}-v${artifact.version}",
-                    "classes.${artifact.extension}"
+                    "${artifactId}-v${version}"
+                    //"classes.${artifact.extension}"
                 )
         if (Files.exists(path)) {
-            callback.log("Dependency ${artifact.toStr()} already exists, skipping...")
-            resolvedDependencies.add(artifact.toStr())
+            callback.log("Dependency ${artifactKey} already downloaded, skipping...")
+            resolvedDependencies.add(artifactKey)
             return
         }
         callback.startResolving("$groupId:$artifactId:$version")
