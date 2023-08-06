@@ -152,8 +152,8 @@ class DependencyResolver(
             val path =
                 Paths.get(
                     downloadPath,
-                    "${artifactId}-v${version}",
-                    "classes.${ext}"
+                    "${artifact.artifactId}-v${artifact.version}",
+                    "classes.${artifact.extension}"
                 )
             Files.createDirectories(path.parent)
             callback.downloading(artifact.toStr())
