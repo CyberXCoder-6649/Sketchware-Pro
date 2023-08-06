@@ -170,8 +170,6 @@ class DependencyResolver(
             callback.dexing(artifact.toStr())
             compileJar(path.parent.resolve("classes.jar"))
             callback.onDependencyResolved(artifact.toStr())
-            // Add the resolved dependency to the cache
-            resolvedDependencies.add(artifact.toStr())
         }
         callback.onTaskCompleted(latestDeps.map { "${it.artifactId}-v${it.version}" })
     }
@@ -182,7 +180,6 @@ class DependencyResolver(
         dependencies: MutableList<Artifact>,
         callback: DependencyResolverCallback
     ) {
-        /
         dependencies.add(artifact)
         callback.log("Resolving sub-dependencies for ${artifact.toStr()}...")
         val pom = artifact.getPOM()
