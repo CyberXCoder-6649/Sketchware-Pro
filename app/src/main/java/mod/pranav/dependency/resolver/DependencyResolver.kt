@@ -149,6 +149,12 @@ class DependencyResolver(
                 callback.invalidPackaging(artifact.toStr())
                 return@forEach
             }
+            val path =
+                Paths.get(
+                    downloadPath,
+                    "${artifactId}-v${version}",
+                    "classes.${ext}"
+                )
             Files.createDirectories(path.parent)
             callback.downloading(artifact.toStr())
             try {
